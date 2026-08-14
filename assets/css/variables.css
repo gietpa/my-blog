@@ -1,0 +1,63 @@
+/* Theme tokens. Everything else in the stylesheet consumes these, so this file
+   must load first. Dark mode swaps the values, not the rules. */
+
+:root {
+  color-scheme: light dark;
+
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f9;
+  --color-text: #1a1a1a;
+  --color-text-secondary: #5b5f66;
+  --color-link: #0b5fff;
+  --color-link-hover: #0044cc;
+  --color-heading: #0b5fff;
+  --color-border: #e2e4e8;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", ui-monospace, Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* Comfortable reading measure: long enough to avoid choppy lines,
+     short enough that the eye finds the next line easily. Roughly 70
+     characters at the body font size.
+
+     Deliberately rem, not ch: `ch` resolves against each element's own font
+     size, so the smaller-text footer would come out narrower than the header
+     and their rules would visibly fail to line up. */
+  --page-width: 46rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+  --space-5: 4rem;
+
+  --radius: 6px;
+}
+
+[data-theme="dark"] {
+  --color-bg: #121212;
+  --color-surface: #1c1c1e;
+  --color-text: #e6e6e6;
+  --color-text-secondary: #a8adb5;
+  --color-link: #6ea8ff;
+  --color-link-hover: #9ac2ff;
+  --color-heading: #6ea8ff;
+  --color-border: #2e2e33;
+}
+
+/* No-JS fallback: the inline head script normally stamps data-theme before
+   paint, but if JS is off or localStorage throws, follow the system setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg: #121212;
+    --color-surface: #1c1c1e;
+    --color-text: #e6e6e6;
+    --color-text-secondary: #a8adb5;
+    --color-link: #6ea8ff;
+    --color-link-hover: #9ac2ff;
+    --color-heading: #6ea8ff;
+    --color-border: #2e2e33;
+  }
+}

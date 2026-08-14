@@ -1,0 +1,86 @@
+/* Code block theme.
+   Deliberately dark in both site themes — code reads as a distinct panel on a
+   light page, and one palette is far less to maintain than two hljs token sets
+   swapped by [data-theme]. Palette adapted from the Atom One Dark family. */
+
+.post-body pre {
+  background-color: #282c34;
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  line-height: 1.55;
+}
+
+.post-body pre code.hljs {
+  background: none;
+  border: 0;
+  color: #abb2bf;
+  display: block;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #7f848e;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-doctag,
+.hljs-formula {
+  color: #c678dd;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-tag {
+  color: #e06c75;
+}
+
+.hljs-literal,
+.hljs-number,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-attr,
+.hljs-attribute {
+  color: #d19a66;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-meta .hljs-string {
+  color: #98c379;
+}
+
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.function_,
+.hljs-built_in,
+.hljs-class .hljs-title {
+  color: #61afef;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-subst {
+  color: #56b6c2;
+}
+
+.hljs-deletion {
+  color: #e06c75;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
