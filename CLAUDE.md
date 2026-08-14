@@ -53,6 +53,22 @@ Vault 쪽 템플릿: `90-Templates/Template - Blog Post.md`
 
 이 두 가지 안전장치(활동 없으면 안 씀 / 검토 전엔 발행 안 됨)는 의도된 것이니 제거하지 마세요.
 
+## 배포
+
+`main`에 push하면 [.github/workflows/deploy.yml](.github/workflows/deploy.yml)이 빌드해서 GitHub Pages로 올립니다.
+결과: <https://gietpa.github.io/my-blog/>
+
+`dist/`는 gitignore이므로 저장소에 서빙할 것이 없습니다. 워크플로가 `npm ci && npm run build`로 매번 새로 만듭니다.
+
+**`BASE_PATH`**: 프로젝트 사이트는 `/my-blog/` 하위에서 서빙되는데 템플릿 경로는 전부 사이트 절대경로입니다.
+워크플로가 `actions/configure-pages`의 `base_path` 출력을 `BASE_PATH` 환경변수로 넘겨주고, `build.js`가 그것을
+`SITE.basePath`에 넣어 모든 경로 앞에 붙입니다. 값을 하드코딩하지 않은 이유는 저장소 이름을 바꾸거나 커스텀
+도메인을 붙였을 때 자동으로 따라가게 하기 위해서입니다.
+
+로컬에서는 `BASE_PATH`가 비어 있어 `npm run dev`가 예전 그대로 루트에서 동작합니다. 프로덕션과 같은 출력을
+확인하려면 `BASE_PATH=/my-blog npm run build`로 빌드하세요 (단, `npm run serve`는 루트에서 서빙하므로 이 빌드는
+로컬에서 링크가 깨집니다 — 경로 확인용입니다).
+
 ## 기술 스택 / 제약 조건
 
 - **브라우저로 나가는 코드에는 프레임워크도 라이브러리도 없습니다.** `dist/`는 순수 HTML/CSS/바닐라 JS이며, 클라이언트 JS는 다크 모드 토글 하나뿐입니다.
@@ -77,11 +93,13 @@ assets/                 # 원본 정적 자원 (커밋함)
   css/                  # variables → base → layout → highlight-theme 순서로 로드됨
   js/theme-toggle.js
 dist/                   # 빌드 결과물 — gitignore, 매 빌드마다 통째로 재생성
+.github/workflows/
+  deploy.yml            # main에 push하면 빌드해서 GitHub Pages로 배포
 ```
 
 ## 코드 작업 시 반드시 지킬 것
 
-- **템플릿의 모든 경로는 루트 기준 절대경로**(`/styles/base.css`, `/`)여야 합니다. 상대경로 금지. 글 페이지는 `/posts/<slug>/index.html`에 있어서 인덱스보다 두 단계 깊고, 상대경로를 쓰면 인덱스에서만 동작하고 글 페이지에서 깨집니다.
+- **템플릿의 모든 경로는 사이트 기준 절대경로를 `href(site, ...)`에 통과시킬 것.** 상대경로 금지 — 글 페이지는 `/posts/<slug>/index.html`에 있어서 인덱스보다 두 단계 깊고, 상대경로를 쓰면 인덱스에서만 동작하고 글 페이지에서 깨집니다. `href()`는 여기에 `site.basePath`를 덧붙입니다. GitHub Pages 프로젝트 사이트가 `/my-blog/` 하위에서 서빙되기 때문에, 이걸 빼먹은 경로 하나가 CSS 전체나 테마 토글을 조용히 404로 만듭니다.
 - **frontmatter 값을 HTML에 넣을 때는 반드시 `escapeHtml()`을 통과시킬 것.** 이 값들은 marked의 이스케이프를 거치지 않으므로, `Rust & Go: A <fair> comparison?` 같은 제목이 그대로 마크업을 깨뜨립니다.
 - **다크 모드 사전 적용 스크립트는 `<head>` 안에 인라인으로 유지할 것.** 외부 파일이나 `defer`로 빼면 첫 페인트 이후 실행돼 라이트→다크 번쩍임이 생깁니다.
 - **테마 색상은 `assets/css/variables.css`의 커스텀 프로퍼티에서만 관리**합니다. 다크 모드는 규칙이 아니라 값만 바꿉니다.

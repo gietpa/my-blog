@@ -12,11 +12,27 @@ import { fileURLToPath } from 'node:url';
 import { loadPosts } from './lib/posts.js';
 import { renderIndexPage, renderPostPage } from './lib/templates.js';
 
+/**
+ * Subdirectory the site is served from, without a trailing slash.
+ *
+ * Empty for local preview and for any host that serves the site at the domain
+ * root. GitHub Pages project sites serve from `/<repo>/`, so the deploy
+ * workflow sets BASE_PATH=/my-blog — without it every root-relative href in the
+ * templates would resolve one level too high and 404.
+ */
+function normalizeBasePath(value) {
+  if (!value) return '';
+  const trimmed = value.trim().replace(/\/+$/, '');
+  if (!trimmed) return '';
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+
 /** Site-wide settings. Change the blog's name and tagline here. */
 const SITE = {
   title: 'My Blog',
   description: 'Notes on programming and whatever else holds my attention.',
   lang: 'en',
+  basePath: normalizeBasePath(process.env.BASE_PATH),
 };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

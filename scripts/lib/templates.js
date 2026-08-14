@@ -1,12 +1,20 @@
 /**
  * HTML page templates — plain template literals, no templating engine.
  *
- * Path rule: every href/src here must be root-relative (`/styles/base.css`, `/`).
- * Post pages live at `/posts/<slug>/index.html`, two levels below the index, so
- * page-relative paths would work on the index and 404 on every post page.
+ * Path rule: every href/src here must be site-absolute and passed through
+ * `href()` — never page-relative. Post pages live at `/posts/<slug>/index.html`,
+ * two levels below the index, so a relative path would work on the index and
+ * 404 on every post page. `href()` also prefixes `site.basePath`, which is how
+ * the same output works both at a domain root and under a GitHub Pages
+ * project subdirectory.
  */
 
 import { escapeHtml } from './util.js';
+
+/** Turns a site-absolute path into one the deployed site can actually serve. */
+function href(site, urlPath) {
+  return `${site.basePath || ''}${urlPath}`;
+}
 
 /**
  * Applies the stored (or system) theme before first paint.
@@ -32,14 +40,14 @@ export function baseLayout(site, { title, description, bodyHtml, isHome = false 
   <title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(description || site.description)}">
   <meta name="color-scheme" content="light dark">
-  <link rel="stylesheet" href="/styles/variables.css">
-  <link rel="stylesheet" href="/styles/base.css">
-  <link rel="stylesheet" href="/styles/layout.css">
-  <link rel="stylesheet" href="/styles/highlight-theme.css">
+  <link rel="stylesheet" href="${href(site, '/styles/variables.css')}">
+  <link rel="stylesheet" href="${href(site, '/styles/base.css')}">
+  <link rel="stylesheet" href="${href(site, '/styles/layout.css')}">
+  <link rel="stylesheet" href="${href(site, '/styles/highlight-theme.css')}">
 </head>
 <body>
   <header class="site-header">
-    <a class="site-title" href="/">${escapeHtml(site.title)}</a>
+    <a class="site-title" href="${href(site, '/')}">${escapeHtml(site.title)}</a>
     <nav class="site-nav">
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
         <span class="theme-toggle__icon" aria-hidden="true"></span>
@@ -52,7 +60,7 @@ ${bodyHtml}
   <footer class="site-footer">
     <p>&copy; ${new Date().getFullYear()} ${escapeHtml(site.title)}</p>
   </footer>
-  <script src="/scripts/theme-toggle.js" defer></script>
+  <script src="${href(site, '/scripts/theme-toggle.js')}" defer></script>
 </body>
 </html>
 `;
@@ -79,7 +87,7 @@ export function renderIndexPage(site, posts) {
   const items = posts
     .map(
       (post) => `      <li class="post-list__item">
-        <h2 class="post-list__title"><a href="${post.url}">${escapeHtml(post.title)}</a></h2>
+        <h2 class="post-list__title"><a href="${href(site, post.url)}">${escapeHtml(post.title)}</a></h2>
         <p class="post-meta"><time datetime="${post.dateISO}">${post.dateFormatted}</time></p>
         <p class="post-list__excerpt">${escapeHtml(post.excerpt)}</p>
       </li>`,
@@ -103,7 +111,7 @@ export function renderPostPage(site, post) {
       <div class="post-body">
 ${post.html}
       </div>
-      <p class="post__back"><a href="/">&larr; Back to all posts</a></p>
+      <p class="post__back"><a href="${href(site, '/')}">&larr; Back to all posts</a></p>
     </article>`;
 
   return baseLayout(site, {
