@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { loadPosts } from './lib/posts.js';
-import { renderIndexPage, renderPostPage } from './lib/templates.js';
+import { renderGamePage, renderIndexPage, renderPostPage } from './lib/templates.js';
 
 /**
  * Subdirectory the site is served from, without a trailing slash.
@@ -59,6 +59,9 @@ async function build() {
   }
 
   await writePage(path.join(DIST_DIR, 'index.html'), renderIndexPage(SITE, posts));
+
+  // Not a post: it has no markdown source and is left out of the post count.
+  await writePage(path.join(DIST_DIR, 'games', '2048', 'index.html'), renderGamePage(SITE));
 
   await fs.cp(path.join(ASSETS_DIR, 'css'), path.join(DIST_DIR, 'styles'), { recursive: true });
   await fs.cp(path.join(ASSETS_DIR, 'js'), path.join(DIST_DIR, 'scripts'), { recursive: true });

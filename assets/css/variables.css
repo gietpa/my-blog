@@ -34,6 +34,37 @@
   --space-5: 4rem;
 
   --radius: 6px;
+
+  /* 2048 tile ramp.
+     Parameterised rather than eleven hand-picked colours per theme: the dark
+     blocks below then need six lines each instead of twenty-odd, which is what
+     keeps the no-JS fallback block from silently drifting out of sync.
+     `var()` here resolves on <html>, the same element [data-theme] lands on,
+     so the whole ramp recomputes on a theme swap. */
+  --tile-hue: 33;
+  --tile-sat: 76%;
+  --tile-l-base: 92%; /* lightness of the value-2 tile */
+  --tile-l-step: 6%;  /* each doubling moves this far along the ramp */
+  --tile-empty-l: 88%;
+  --tile-fg-low: #1b1206;  /* text on the near end of the ramp */
+  --tile-fg-high: #fffaf3; /* text on the far end of the ramp */
+  --game-overlay-bg: rgba(255, 255, 255, 0.92);
+
+  --board-bg: hsl(var(--tile-hue) 26% calc(var(--tile-empty-l) - 6%));
+  --tile-empty-bg: hsl(var(--tile-hue) 30% var(--tile-empty-l));
+
+  --tile-2-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 0 * var(--tile-l-step)));
+  --tile-4-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 1 * var(--tile-l-step)));
+  --tile-8-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 2 * var(--tile-l-step)));
+  --tile-16-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 3 * var(--tile-l-step)));
+  --tile-32-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 4 * var(--tile-l-step)));
+  --tile-64-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 5 * var(--tile-l-step)));
+  --tile-128-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 6 * var(--tile-l-step)));
+  --tile-256-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 7 * var(--tile-l-step)));
+  --tile-512-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 8 * var(--tile-l-step)));
+  --tile-1024-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 9 * var(--tile-l-step)));
+  --tile-2048-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 10 * var(--tile-l-step)));
+  --tile-super-bg: hsl(var(--tile-hue) var(--tile-sat) calc(var(--tile-l-base) - 11 * var(--tile-l-step)));
 }
 
 [data-theme="dark"] {
@@ -45,6 +76,17 @@
   --color-link-hover: #9ac2ff;
   --color-heading: #6ea8ff;
   --color-border: #2e2e33;
+
+  /* The ramp runs the other way in the dark: value 2 is the darkest tile and
+     2048 the brightest. Only the parameters change — the class-to-token rules
+     in game-2048.css are identical in both themes, including the text colour
+     flip, because --tile-fg-low and --tile-fg-high simply trade values. */
+  --tile-l-base: 22%;
+  --tile-l-step: -5%;
+  --tile-empty-l: 17%;
+  --tile-fg-low: #fffaf3;
+  --tile-fg-high: #1b1206;
+  --game-overlay-bg: rgba(18, 18, 18, 0.92);
 }
 
 /* No-JS fallback: the inline head script normally stamps data-theme before
@@ -59,5 +101,15 @@
     --color-link-hover: #9ac2ff;
     --color-heading: #6ea8ff;
     --color-border: #2e2e33;
+
+    /* Must mirror the [data-theme="dark"] block above. Miss these six lines
+       and the tiles keep their light-mode ramp only when JS is off — a bug no
+       ordinary test run ever shows. */
+    --tile-l-base: 22%;
+    --tile-l-step: -5%;
+    --tile-empty-l: 17%;
+    --tile-fg-low: #fffaf3;
+    --tile-fg-high: #1b1206;
+    --game-overlay-bg: rgba(18, 18, 18, 0.92);
   }
 }

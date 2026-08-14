@@ -28,8 +28,30 @@ try{var s=localStorage.getItem('theme');\
 var t=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');\
 d.setAttribute('data-theme',t);}catch(e){}})();`;
 
-export function baseLayout(site, { title, description, bodyHtml, isHome = false }) {
+/**
+ * @param {object} site
+ * @param {object} options
+ * @param {string[]} [options.extraStyles]  Site-absolute stylesheet paths, loaded
+ *   after the four shared sheets. Order matters: page CSS only consumes the
+ *   custom properties declared in variables.css, so it must come last.
+ * @param {string[]} [options.extraScripts] Site-absolute script paths, deferred
+ *   and emitted after theme-toggle.js. Deferred scripts run in document order,
+ *   so array order is execution order.
+ *
+ * Both default to empty arrays so the existing callers need no changes.
+ */
+export function baseLayout(
+  site,
+  { title, description, bodyHtml, isHome = false, extraStyles = [], extraScripts = [] },
+) {
   const pageTitle = isHome ? site.title : `${title} · ${site.title}`;
+
+  const extraStyleTags = extraStyles
+    .map((stylePath) => `\n  <link rel="stylesheet" href="${href(site, stylePath)}">`)
+    .join('');
+  const extraScriptTags = extraScripts
+    .map((scriptPath) => `\n  <script src="${href(site, scriptPath)}" defer></script>`)
+    .join('');
 
   return `<!DOCTYPE html>
 <html lang="${escapeHtml(site.lang)}">
@@ -43,12 +65,13 @@ export function baseLayout(site, { title, description, bodyHtml, isHome = false 
   <link rel="stylesheet" href="${href(site, '/styles/variables.css')}">
   <link rel="stylesheet" href="${href(site, '/styles/base.css')}">
   <link rel="stylesheet" href="${href(site, '/styles/layout.css')}">
-  <link rel="stylesheet" href="${href(site, '/styles/highlight-theme.css')}">
+  <link rel="stylesheet" href="${href(site, '/styles/highlight-theme.css')}">${extraStyleTags}
 </head>
 <body>
   <header class="site-header">
     <a class="site-title" href="${href(site, '/')}">${escapeHtml(site.title)}</a>
     <nav class="site-nav">
+      <a class="site-nav__link" href="${href(site, '/games/2048/')}">2048</a>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
         <span class="theme-toggle__icon" aria-hidden="true"></span>
       </button>
@@ -60,7 +83,7 @@ ${bodyHtml}
   <footer class="site-footer">
     <p>&copy; ${new Date().getFullYear()} ${escapeHtml(site.title)}</p>
   </footer>
-  <script src="${href(site, '/scripts/theme-toggle.js')}" defer></script>
+  <script src="${href(site, '/scripts/theme-toggle.js')}" defer></script>${extraScriptTags}
 </body>
 </html>
 `;
@@ -99,6 +122,50 @@ export function renderIndexPage(site, posts) {
     description: site.description,
     isHome: true,
     bodyHtml: `    <ul class="post-list">\n${items}\n    </ul>`,
+  });
+}
+
+/** Static background grid. Tiles are created by the game's JS, never here. */
+const BOARD_CELL_COUNT = 16;
+
+/**
+ * The 2048 page. This template owns only the markup contract (element ids and
+ * class names); behaviour lives in game-2048-core/ui.js and styling in
+ * game-2048.css, so nothing here may be renamed without updating those.
+ *
+ * The board and tiles stay empty on the server — the JS builds them. What is
+ * rendered statically is the 16-cell background grid, so the board keeps its
+ * shape before the script runs.
+ */
+export function renderGamePage(site) {
+  const cells = Array.from(
+    { length: BOARD_CELL_COUNT },
+    () => '        <div class="board__cell" role="gridcell" aria-label="empty"></div>',
+  ).join('\n');
+
+  const bodyHtml = `    <section id="game-2048" class="game">
+      <h1 class="game__title">2048</h1>
+      <div class="game__scores">
+        <p class="game__score">Score <span id="score-value">0</span></p>
+        <p class="game__score">Best <span id="best-value">0</span></p>
+      </div>
+      <button id="new-game" class="game__new" type="button">New Game</button>
+      <div id="board" class="board" role="grid" tabindex="0" aria-label="2048 board">
+${cells}
+      </div>
+      <div id="game-over" class="game__overlay" hidden></div>
+      <p id="game-status" aria-live="polite"></p>
+      <p class="game__help">Use arrow keys to move tiles.</p>
+      <p class="game__nojs">This game requires JavaScript.</p>
+    </section>`;
+
+  return baseLayout(site, {
+    title: '2048',
+    description: 'Play 2048 — join the tiles to reach 2048.',
+    bodyHtml,
+    extraStyles: ['/styles/game-2048.css'],
+    // core must load before ui: deferred scripts run in document order.
+    extraScripts: ['/scripts/game-2048-core.js', '/scripts/game-2048-ui.js'],
   });
 }
 

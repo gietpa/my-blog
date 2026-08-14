@@ -1,0 +1,229 @@
+/* 2048 board, tiles and end-of-game overlay.
+   Every colour here comes from a custom property in variables.css — nothing is
+   hardcoded, so dark mode is a value swap and needs no extra rules below. */
+
+.game {
+  /* The overlay is an absolutely positioned sibling of the board, so the
+     section itself is the containing block it covers. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.game__title {
+  margin: 0;
+}
+
+.game__scores {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.game__score {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  text-align: center;
+}
+
+.game__score span {
+  color: var(--color-text);
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.game__new,
+.game__overlay button {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: var(--space-1) var(--space-3);
+}
+
+.game__new:hover,
+.game__overlay button:hover {
+  border-color: var(--color-link);
+  color: var(--color-link);
+}
+
+/* --- Board ---------------------------------------------------------------
+   Without `touch-action: none` a swipe is consumed by page scrolling and the
+   game is unplayable on phones while looking perfectly fine on desktop. */
+.board {
+  background: var(--board-bg);
+  border-radius: var(--radius);
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--space-1);
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 28rem;
+  padding: var(--space-1);
+  touch-action: none;
+  width: 100%;
+}
+
+.board__cell {
+  aspect-ratio: 1;
+  background: var(--tile-empty-bg);
+  border-radius: var(--radius);
+  /* Anchors the absolutely positioned tile so the pop animation can scale
+     past the cell edge without pushing the grid around. */
+  position: relative;
+}
+
+.tile {
+  align-items: center;
+  background: var(--tile-2-bg);
+  border-radius: var(--radius);
+  color: var(--tile-fg-low);
+  display: flex;
+  font-size: clamp(1.1rem, 6vw, 1.9rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  inset: 0;
+  justify-content: center;
+  line-height: 1;
+  position: absolute;
+}
+
+/* Four-digit values would otherwise overflow the cell on a 375px screen. */
+.tile--len4 {
+  font-size: clamp(0.75rem, 4vw, 1.3rem);
+}
+
+.tile--2 { background: var(--tile-2-bg); }
+.tile--4 { background: var(--tile-4-bg); }
+.tile--8 { background: var(--tile-8-bg); }
+.tile--16 { background: var(--tile-16-bg); }
+.tile--32 { background: var(--tile-32-bg); }
+.tile--64 { background: var(--tile-64-bg); }
+.tile--128 { background: var(--tile-128-bg); }
+.tile--256 { background: var(--tile-256-bg); }
+.tile--512 { background: var(--tile-512-bg); }
+.tile--1024 { background: var(--tile-1024-bg); }
+.tile--2048 { background: var(--tile-2048-bg); }
+.tile--super { background: var(--tile-super-bg); }
+
+/* Text colour flips once, at the step where the ramp crosses from light to
+   dark backgrounds. Dark mode swaps the *values* of these two tokens, so this
+   rule stays correct in both themes and never needs a dark-mode override. */
+.tile--16,
+.tile--32,
+.tile--64,
+.tile--128,
+.tile--256,
+.tile--512,
+.tile--1024,
+.tile--2048,
+.tile--super {
+  color: var(--tile-fg-high);
+}
+
+/* --- Overlay -------------------------------------------------------------
+   `hidden` alone loses to `display: flex`, so it is restated here. */
+.game__overlay {
+  align-items: center;
+  background: var(--game-overlay-bg);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  text-align: center;
+}
+
+.game__overlay[hidden] {
+  display: none;
+}
+
+.game__overlay-message {
+  color: var(--color-text);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.game__overlay-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.game__help {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Screen-reader-only live region. The repository has no shared utility class
+   for this, so the id carries it; without these lines the announcement text
+   renders visibly under the board. */
+#game-status {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* --- No-JS ---------------------------------------------------------------
+   Same pattern as `.theme-toggle` in layout.css: the inline head script adds
+   `.js` before first paint, so nothing flashes. A dead grid with no script
+   behind it is worse than an honest sentence. */
+.board,
+.game__scores,
+.game__new,
+.game__help {
+  display: none;
+}
+
+.js .board { display: grid; }
+.js .game__scores { display: flex; }
+.js .game__new { display: inline-block; }
+.js .game__help { display: block; }
+.js .game__nojs { display: none; }
+
+/* --- Animations ----------------------------------------------------------
+   Feedback only: tiles do not slide (spec §10). */
+@keyframes tile-appear {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes tile-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
+
+.tile--new {
+  animation: tile-appear 120ms ease-out;
+}
+
+.tile--merged {
+  animation: tile-pop 120ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile--new,
+  .tile--merged {
+    animation: none;
+  }
+}
