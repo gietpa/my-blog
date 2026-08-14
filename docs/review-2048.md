@@ -89,7 +89,12 @@ $ BASE_PATH=/my-blog npm run build
 
 ## 3. 발견 사항
 
-### 3.1 `role="row"` 누락 — 사소
+### 3.1 `role="row"` 누락 — 사소 · **해결됨 (2026-08-15)**
+
+> 수정 완료. `.board__row` 래퍼 4개에 `role="row"`를 주고 `display: contents`로 레이아웃에서 제거했다.
+> 확인: 마크업에 `[role="row"]` 4개 / `[role="gridcell"]` 16개, 브라우저 실측으로 시각적 행 4 × 열 4 유지,
+> UI가 찾는 셀 16개 그대로, 이동·타일 생성 정상, 코어 테스트 26/26.
+> 아래는 원래 발견 내용이다.
 
 `scripts/lib/templates.js:141-144` / 렌더된 마크업
 

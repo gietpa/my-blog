@@ -126,7 +126,7 @@ export function renderIndexPage(site, posts) {
 }
 
 /** Static background grid. Tiles are created by the game's JS, never here. */
-const BOARD_CELL_COUNT = 16;
+const BOARD_SIZE = 4;
 
 /**
  * The 2048 page. This template owns only the markup contract (element ids and
@@ -138,10 +138,18 @@ const BOARD_CELL_COUNT = 16;
  * shape before the script runs.
  */
 export function renderGamePage(site) {
-  const cells = Array.from(
-    { length: BOARD_CELL_COUNT },
-    () => '        <div class="board__cell" role="gridcell" aria-label="empty"></div>',
-  ).join('\n');
+  // ARIA wants grid -> row -> gridcell, but the cells also have to be direct
+  // grid items of .board for `display: grid` to lay them out. `.board__row`
+  // carries `display: contents` so it exists for assistive tech and vanishes
+  // for layout. The UI script finds cells with a descendant selector, so the
+  // extra level does not change how it reads them.
+  const rows = Array.from({ length: BOARD_SIZE }, () => {
+    const cells = Array.from(
+      { length: BOARD_SIZE },
+      () => '          <div class="board__cell" role="gridcell" aria-label="empty"></div>',
+    ).join('\n');
+    return `        <div class="board__row" role="row">\n${cells}\n        </div>`;
+  }).join('\n');
 
   const bodyHtml = `    <section id="game-2048" class="game">
       <h1 class="game__title">2048</h1>
@@ -151,7 +159,7 @@ export function renderGamePage(site) {
       </div>
       <button id="new-game" class="game__new" type="button">New Game</button>
       <div id="board" class="board" role="grid" tabindex="0" aria-label="2048 board">
-${cells}
+${rows}
       </div>
       <div id="game-over" class="game__overlay" hidden></div>
       <p id="game-status" aria-live="polite"></p>

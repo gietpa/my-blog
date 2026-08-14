@@ -62,6 +62,14 @@
 /* --- Board ---------------------------------------------------------------
    Without `touch-action: none` a swipe is consumed by page scrolling and the
    game is unplayable on phones while looking perfectly fine on desktop. */
+/* The row wrappers exist only to satisfy ARIA's grid -> row -> gridcell
+   hierarchy. `display: contents` removes them from layout so their cells stay
+   direct grid items of .board — without it the four rows become the grid items
+   and the board collapses to a single column. */
+.board__row {
+  display: contents;
+}
+
 .board {
   background: var(--board-bg);
   border-radius: var(--radius);
